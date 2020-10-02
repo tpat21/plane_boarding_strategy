@@ -1,6 +1,13 @@
 import numpy as np
 import time
 from threading import Timer
+import math
+
+
+rows = 5
+cols = 5
+middle =  math.ceil(cols/2) -1
+seating = np.zeros([rows, cols])
 
 
 class Passenger:
@@ -9,7 +16,7 @@ class Passenger:
         self.rowNum = rowNum
         self.colNum = colNum
 
-        self.x = 2
+        self.x = middle
         self.y = 0
         self.ticker = 0
         self.isSeated = False
@@ -37,7 +44,14 @@ class Passenger:
         seating[self.y, self.x] = 7
         self.display()
         self.x -= 1
-        # seating[self.y, self.x + 1] = 0
+        seating[self.y, self.x + 1] = 0
+        time.sleep(1)
+
+    def moveRight(self):
+        seating[self.y, self.x] = 7
+        self.display()
+        self.x += 1
+        seating[self.y, self.x - 1] = 0
         time.sleep(1)
 
     def wait(self):
@@ -47,11 +61,8 @@ class Passenger:
         print(seating)
 
 
-p1 = Passenger(3, 3, False)
+p1 = Passenger(4, 0, False)
 
-rows = 5
-cols = 5
-seating = np.zeros([rows, cols])
 
 
 def runProgram():
@@ -61,10 +72,16 @@ def runProgram():
         while passenger.rowNum != passenger.y:
             passenger.moveDown()
 
-        # while passenger.colNum != passenger.x:
-        #     if passenger.colNum == 1 or 2:
-        #         passenger.moveLeft()
-        #         print("e")
+        if passenger.colNum < middle:
+            while passenger.x != -1:
+                passenger.moveLeft()
+
+        else:
+            while passenger.x != cols:
+                passenger.moveRight()
+
+
+
 
 
 runProgram()
