@@ -11,26 +11,14 @@ seating = np.zeros([rows, cols])
 
 
 class Passenger:
-    def __init__(self, rowNum, colNum, carryOn):
-        self.carryOn = carryOn
+    def __init__(self, rowNum, colNum):
         self.rowNum = rowNum
         self.colNum = colNum
 
         self.x = middle
         self.y = 0
-        self.ticker = 0
-        self.isSeated = False
         self.left = False
         self.right = False
-
-    def sit(self):
-        pass
-
-    def putCarryOn(self):
-        pass
-
-    def collide(self):
-        pass
 
     def moveDown(self):
         seating[self.y, self.x] = 7
@@ -45,6 +33,7 @@ class Passenger:
         self.display()
         self.x -= 1
         seating[self.y, self.x + 1] = 0
+
         time.sleep(1)
 
     def moveRight(self):
@@ -52,16 +41,18 @@ class Passenger:
         self.display()
         self.x += 1
         seating[self.y, self.x - 1] = 0
+
         time.sleep(1)
 
-    def wait(self):
-        pass
+    def sitDown(self):
+        seating[self.y, self.x+1] = 7
 
     def display(self):
         print(seating)
+        print("------------------")
 
 
-p1 = Passenger(4, 0, False)
+p1 = Passenger(4, 0)
 
 
 
@@ -77,8 +68,14 @@ def runProgram():
                 passenger.moveLeft()
 
         else:
-            while passenger.x != cols:
+            while passenger.colNum != passenger.x:
                 passenger.moveRight()
+
+
+
+        if passenger.colNum == passenger.x+1 and passenger.rowNum == passenger.y:
+            passenger.sitDown()
+
 
 
 
