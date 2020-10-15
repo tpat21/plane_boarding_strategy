@@ -52,8 +52,6 @@ class View():
             self.drawPass(self.win, self.passengers[-1], nothing)
 
     def moveMultiple(self, processes):
-        print(len(processes))
-        print(processes)
         for i in range(0, 8):
             for j in range(0, len(processes)):
                 if processes[j][1] == 'down':
@@ -64,6 +62,9 @@ class View():
                     self.passengers[processes[j][0]].smallRight(i % 4)
                 elif processes[j][1] == 'left':
                     self.passengers[processes[j][0]].smallLeft(i % 4)
+                elif processes[j][1] == 'stow':
+                        # TODO insert stowing animation
+                    pass
                 else:
                     self.passengers[processes[j][0]].sitDown()
             time.sleep(speed / 8)
