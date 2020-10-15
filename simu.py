@@ -6,7 +6,7 @@ import math
 
 rows = 5
 cols = 5
-middle =  int(math.ceil(cols/2))
+middle =  3-1
 #seating = np.zeros([rows, cols])
 
 
@@ -58,10 +58,10 @@ class Passenger:
         print("------------------")
 
 
-p1 = Passenger(4, 0, 2)
-p2 = Passenger(3, 4, 3)
-p3 = Passenger(2, 3, 4)
-p4 = Passenger(1, 1, 5)
+p1 = Passenger(4, 0, 1)
+p2 = Passenger(3, 4, 1)
+p3 = Passenger(2, 3, 1)
+p4 = Passenger(1, 1, 1)
 
 
 def runProgram():
