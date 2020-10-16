@@ -9,7 +9,17 @@ walk2 = 'Assets/Sprite2.png'
 walk3 = 'Assets/Sprite1.png'
 walk4 = 'Assets/Sprite3.png'
 nothing = 'Assets/Nothing.png'
+stowR1 = 'Assets/stowR1.png'
+stowR2 = 'Assets/stowR2.png'
+stowR3 = 'Assets/stowR3.png'
+stowR4 = 'Assets/stowR2.png'
+stowL1 = 'Assets/stowL1.png'
+stowL2 = 'Assets/stowL2.png'
+stowL3 = 'Assets/stowL3.png'
+stowL4 = 'Assets/stowL2.png'
 walk = [walk1, walk2, walk3, walk4]
+stowR = [stowR1, stowR2, stowR3, stowR4]
+stowL = [stowL1, stowL2, stowL3, stowL4]
 sitting = 'Assets/Sitting.png'
 
 tileHeight = 80  # height of a tile (passenger, seat, etc) in pixels
@@ -62,9 +72,10 @@ class View():
                     self.passengers[processes[j][0]].smallRight(i % 4)
                 elif processes[j][1] == 'left':
                     self.passengers[processes[j][0]].smallLeft(i % 4)
-                elif processes[j][1] == 'stow':
-                        # TODO insert stowing animation
-                    pass
+                elif processes[j][1] == 'stowR':
+                    self.passengers[processes[j][0]].stow(i % 4, "r")
+                elif processes[j][1] == 'stowL':
+                    self.passengers[processes[j][0]].stow(i % 4, "l")
                 else:
                     self.passengers[processes[j][0]].sitDown()
             time.sleep(speed / 8)
@@ -110,6 +121,13 @@ class Passenger():
 
     def smallLeft(self, frame):
         self.smallWalk(-1, 0, frame)
+
+    def stow(self, frame, dir):
+        self.sprite.undraw()
+        if dir == 'r':
+            self.sprite = self.drawPass(stowR[frame])
+        else:
+            self.sprite = self.drawPass(stowL[frame])
 
     def moveDown(self):
         self.walk(0, 1)
