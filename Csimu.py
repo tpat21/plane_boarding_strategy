@@ -177,7 +177,10 @@ def runProgram(processes):
           seating[passenger.y, passenger.x] = passenger.thisnum
         elif passenger.rowNum == passenger.y and passenger.timestore > 0:
           passenger.timestore = passenger.timestore - 1
-          processes.append([passenger.passNum, "stow"])
+          if passenger.x > passenger.colNum:
+            processes.append([passenger.passNum, "stowL"])
+          else:
+            processes.append([passenger.passNum, "stowR"])
         if passenger.timestore <= 0:
           if passenger.colNum < middle and seating[passenger.y, passenger.x - 1] == 0:
             if passenger.x != -1:
