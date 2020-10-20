@@ -36,6 +36,9 @@ class View():
         self.passengers = []
 
     def createWindow(self):
+
+    	# Establishes static tiles representing the plane (seats, aisle, etc.)
+
         win = GraphWin("Airplane Boarding", 80 * self.col, 80 * self.col + 80)
         for i in range(0, self.col + 1):
             for j in range(0, self.row):
@@ -48,20 +51,33 @@ class View():
         return win
 
     def drawImg(self, win, x, y, name):
+
+    	# Prints the image of name (name) at x,y corresponding to tile coordinates, not pixel coordinates
+
         img = Image(Point((tileHeight * x) + tileHeight / 2, (tileHeight * y) + tileHeight / 2), name)
         img.draw(win)
 
     def drawPass(self, win, p, name):
+
+    	# Prints image of name (name) at the x,y coordinates of a passenger p
+
         img = Image(Point(p.x, p.y), name)
         img.draw(win)
         return img
 
     def addPass(self, num):
+
+    	# Instantiates a new passenger at the default starting location - the top of the aisle
+
         for i in range(0, num):
             self.passengers.append(Passenger(self.width / 2, -1 * (tileHeight / 2) - 60, self.win))
             self.drawPass(self.win, self.passengers[-1], nothing)
 
     def moveMultiple(self, processes):
+
+    	# Takes a list of processes (a passenger and a movement/change)
+    	# Executes all changes simultaneously without the use of threading at (speed) fps
+
         for i in range(0, 8):
             for j in range(0, len(processes)):
                 if processes[j][1] == 'down':
@@ -90,6 +106,10 @@ class Passenger():
         self.sitting = False
 
     def drawPass(self, name):
+
+    	# Draws a passenger to win at its x and y coordinates
+    	# takes name (string) to indicate its sprite
+
         if(self.y <= -20):
             name = nothing
         img = Image(Point(self.x, self.y), name)
@@ -97,10 +117,18 @@ class Passenger():
         return img
 
     def smallWalk(self, x, y, frame):
+
+    	# Walks in a direction, cycling through the walking animation
+    	# Responsible for one fourth of a walk cycle or one eighth of a tileHeight movement
+    	# x and y are either 0, 1 or -1, indicating positive or negative movement on the axis. 
+    	# If x/y is not 0, the other must be 0
+
         self.sprite.undraw()
         self.x += (tileHeight * x) / 8
         self.y += (tileHeight * y) / 8
         self.sprite = self.drawPass(walk[frame])
+
+    # Following methods call smallWalk for different directions
 
     def smallDown(self, frame):
         self.smallWalk(0, 1, frame)
@@ -114,7 +142,11 @@ class Passenger():
     def smallLeft(self, frame):
         self.smallWalk(-1, 0, frame)
 
+
     def stow(self, frame, dir):
+
+    	# Cycles through stowing animation, alters based on side of aisle they must stow their bag
+
         self.sprite.undraw()
         if dir == 'r':
             self.sprite = self.drawPass(stowR[frame])
@@ -129,5 +161,5 @@ class Passenger():
             self.sitting = True
 
 
-# v.win.getMouse()  # Pause to view result
-# v.win.close()    # Close window when done
+# v.win.getMouse()  # Waits for mouseclick to continue
+# v.win.close()    # Closes window
