@@ -144,6 +144,7 @@ p4 = Passenger(1, 1, 5, v.passengers[3], 3)
 
 
 def runProgram(processes):
+  v.win.getMouse() # Click to start
   processes = processes
   seating = np.zeros([rows, cols])
   p1.timestore = 3
