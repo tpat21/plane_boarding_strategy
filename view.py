@@ -4,25 +4,25 @@ import time
 from threading import Timer
 import math
 
-walk1 = 'Assets/Sprite1.png'
-walk2 = 'Assets/Sprite2.png'
-walk3 = 'Assets/Sprite1.png'
-walk4 = 'Assets/Sprite3.png'
-nothing = 'Assets/Nothing.png'
-stowR1 = 'Assets/stowR1.png'
-stowR2 = 'Assets/stowR2.png'
-stowR3 = 'Assets/stowR3.png'
-stowR4 = 'Assets/stowR2.png'
-stowL1 = 'Assets/stowL1.png'
-stowL2 = 'Assets/stowL2.png'
-stowL3 = 'Assets/stowL3.png'
-stowL4 = 'Assets/stowL2.png'
+walk1 = 'Assets/24p/Sprite1.png'
+walk2 = 'Assets/24p/Sprite2.png'
+walk3 = 'Assets/24p/Sprite1.png'
+walk4 = 'Assets/24p/Sprite3.png'
+nothing = 'Assets/24p/Nothing.png'
+stowR1 = 'Assets/24p/stowR1.png'
+stowR2 = 'Assets/24p/stowR2.png'
+stowR3 = 'Assets/24p/stowR3.png'
+stowR4 = 'Assets/24p/stowR2.png'
+stowL1 = 'Assets/24p/stowL1.png'
+stowL2 = 'Assets/24p/stowL2.png'
+stowL3 = 'Assets/24p/stowL3.png'
+stowL4 = 'Assets/24p/stowL2.png'
 walk = [walk1, walk2, walk3, walk4]
 stowR = [stowR1, stowR2, stowR3, stowR4]
 stowL = [stowL1, stowL2, stowL3, stowL4]
-sitting = 'Assets/Sitting.png'
+sitting = 'Assets/24p/Sitting.png'
 
-tileHeight = 80  # height of a tile (passenger, seat, etc) in pixels
+tileHeight = 24  # height of a tile (passenger, seat, etc) in pixels
 speed = 1  # number of tiles a passenger can move through in 1 second without interference
 
 
@@ -37,29 +37,29 @@ class View():
 
     def createWindow(self):
 
-    	# Establishes static tiles representing the plane (seats, aisle, etc.)
+        # Establishes static tiles representing the plane (seats, aisle, etc.)
 
-        win = GraphWin("Airplane Boarding", 80 * self.col, 80 * self.col + 80)
-        for i in range(0, self.col + 1):
-            for j in range(0, self.row):
-                if j == math.floor(self.row / 2):
-                    self.drawImg(win, j, i, 'Assets/Aisle2.png')
+        win = GraphWin("Airplane Boarding", tileHeight * self.col, tileHeight * self.row + tileHeight)
+        for i in range(0, self.row + 1):
+            for j in range(0, self.col):
+                if j == math.floor(self.col / 2):
+                    self.drawImg(win, j, i, 'Assets/24p/Aisle.png')
                 elif i == 0:
-                    self.drawImg(win, j, i, 'Assets/Empty.png')
+                    self.drawImg(win, j, i, 'Assets/24p/Empty.png')
                 else:
-                    self.drawImg(win, j, i, 'Assets/Seat2.png')
+                    self.drawImg(win, j, i, 'Assets/24p/Seat.png')
         return win
 
     def drawImg(self, win, x, y, name):
 
-    	# Prints the image of name (name) at x,y corresponding to tile coordinates, not pixel coordinates
+        # Prints the image of name (name) at x,y corresponding to tile coordinates, not pixel coordinates
 
         img = Image(Point((tileHeight * x) + tileHeight / 2, (tileHeight * y) + tileHeight / 2), name)
         img.draw(win)
 
     def drawPass(self, win, p, name):
 
-    	# Prints image of name (name) at the x,y coordinates of a passenger p
+        # Prints image of name (name) at the x,y coordinates of a passenger p
 
         img = Image(Point(p.x, p.y), name)
         img.draw(win)
@@ -67,16 +67,16 @@ class View():
 
     def addPass(self, num):
 
-    	# Instantiates a new passenger at the default starting location - the top of the aisle
+        # Instantiates a new passenger at the default starting location - the top of the aisle
 
         for i in range(0, num):
-            self.passengers.append(Passenger(self.width / 2, -1 * (tileHeight / 2) - 60, self.win))
+            self.passengers.append(Passenger(self.width / 2, -1 * (tileHeight / 2) - (tileHeight*(2/3)), self.win))
             self.drawPass(self.win, self.passengers[-1], nothing)
 
     def moveMultiple(self, processes):
 
-    	# Takes a list of processes (a passenger and a movement/change)
-    	# Executes all changes simultaneously without the use of threading at (speed) fps
+        # Takes a list of processes (a passenger and a movement/change)
+        # Executes all changes simultaneously without the use of threading at (speed) fps
 
         for i in range(0, 8):
             for j in range(0, len(processes)):
@@ -107,10 +107,10 @@ class Passenger():
 
     def drawPass(self, name):
 
-    	# Draws a passenger to win at its x and y coordinates
-    	# takes name (string) to indicate its sprite
+        # Draws a passenger to win at its x and y coordinates
+        # takes name (string) to indicate its sprite
 
-        if(self.y <= -20):
+        if(self.y <= -(tileHeight/4)):
             name = nothing
         img = Image(Point(self.x, self.y), name)
         img.draw(self.win)
@@ -118,10 +118,10 @@ class Passenger():
 
     def smallWalk(self, x, y, frame):
 
-    	# Walks in a direction, cycling through the walking animation
-    	# Responsible for one fourth of a walk cycle or one eighth of a tileHeight movement
-    	# x and y are either 0, 1 or -1, indicating positive or negative movement on the axis. 
-    	# If x/y is not 0, the other must be 0
+        # Walks in a direction, cycling through the walking animation
+        # Responsible for one fourth of a walk cycle or one eighth of a tileHeight movement
+        # x and y are either 0, 1 or -1, indicating positive or negative movement on the axis.
+        # If x/y is not 0, the other must be 0
 
         self.sprite.undraw()
         self.x += (tileHeight * x) / 8
@@ -142,10 +142,9 @@ class Passenger():
     def smallLeft(self, frame):
         self.smallWalk(-1, 0, frame)
 
-
     def stow(self, frame, dir):
 
-    	# Cycles through stowing animation, alters based on side of aisle they must stow their bag
+        # Cycles through stowing animation, alters based on side of aisle they must stow their bag
 
         self.sprite.undraw()
         if dir == 'r':
@@ -156,7 +155,7 @@ class Passenger():
     def sitDown(self):
         if self.sitting == False:
             self.sprite.undraw()
-            self.y += 60
+            self.y += (tileHeight*(2/3))
             self.sprite = self.drawPass(sitting)
             self.sitting = True
 

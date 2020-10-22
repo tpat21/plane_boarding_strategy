@@ -5,9 +5,9 @@ from threading import *
 import math
 from view import *
 
-
-rows = 5
-cols = 5
+capacity = 132
+rows = 23
+cols = 7
 middle = int(math.ceil(cols / 2)) - 1
 #seating = np.zeros([rows, cols])
 Vmin = 17 * 11 * 7
@@ -134,26 +134,61 @@ class Passenger:
     print("------------------")
 
 
-v = View(cols, rows)
-v.addPass(4)
+def manyPassengers(num, plane, views):
 
-p1 = Passenger(4, 0, 2, v.passengers[0], 0)
-p2 = Passenger(3, 4, 3, v.passengers[1], 1)
-p3 = Passenger(2, 3, 4, v.passengers[2], 2)
-p4 = Passenger(1, 1, 5, v.passengers[3], 3)
+  # creates list of (num) passengers
+  # (plane) indicates the number of rows and columns
+  # for 132 seats, plane = [23, 7]
+  # views corresponds to v.passengers
+
+  seating = []
+
+  for i in range(0,plane[0]):
+    for j in range(0,plane[1]):
+      if((i==0 or i == plane[0]-1) and (j==0 or j==1 or j==plane[1]-1)):
+        pass
+      elif j != middle:
+        seating.append([i,j])
+
+  passengers = []
+
+  for i in range(0, num):
+    index = random.randint(0,len(seating)-1)
+    coord = seating[index]
+    passengers.append(Passenger(coord[0], coord[1], random.randint(0, 9), views[i], i))
+    seating.remove(coord)
+
+  return passengers
+
+# 132 seats, 23 rows, 6 seats per row (rows 1 and 23 have only 3 seats)
+
+
+#p1 = Passenger(4, 0, 2, v.passengers[0], 0)
+#p2 = Passenger(3, 4, 3, v.passengers[1], 1)
+#p3 = Passenger(2, 3, 4, v.passengers[2], 2)
+#p4 = Passenger(1, 1, 5, v.passengers[3], 3)
 
 
 def runProgram(processes):
-  v.win.getMouse() # Click to start
+
+  print("Initializing values...")
+
   processes = processes
+  v = View(cols, rows)
+  v.addPass(capacity)
+  planeDimensions = [rows, cols]
+  passengers = manyPassengers(capacity, planeDimensions, v.passengers)
+  v.moveMultiple(processes)
+  processes=[]
   seating = np.zeros([rows, cols])
-  p1.timestore = 3
-  p2.timestore = 3
-  p3.timestore = 3
-  p4.timestore = 3
-  passengers = [p2, p1, p4, p3]
+  for p in passengers:
+    p.timestore =3
   ct = 0
   numpass = len(passengers)
+
+  print("\nClick to Start")
+  v.win.getMouse()
+
   while ct < numpass:
     for passenger in passengers:
       if passenger.ent == False and seating[passenger.y, passenger.x] == 0:
@@ -193,11 +228,12 @@ def runProgram(processes):
             passenger.moveRight(seating, processes)
             seating[passenger.y, passenger.x - 1] = 0
             seating[passenger.y, passenger.x] = passenger.thisnum
+    print(processes)
+    v.moveMultiple(processes)
     if ct != numpass:
       print(seating)
       print("-------------")
       # time.sleep(1)
-    v.moveMultiple(processes)
     processes = []
 
 
