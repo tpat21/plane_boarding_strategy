@@ -3,7 +3,7 @@ import time
 import random
 from threading import *
 import math
-from view import *
+from PyView import *
 
 capacity = 132
 rows = 23
@@ -35,6 +35,8 @@ class Passenger:
     self.sprite = sprite
     processes.append([self.passNum, "down"])
 
+    self.seated = False
+
     self.x = middle
     self.y = 0
     self.left = False
@@ -44,7 +46,7 @@ class Passenger:
     self.sit = False
     self.age = float(int(np.random.normal(39, 19.5, 1)))
     self.numbags = self.setbags()
-    print(self.age)
+    # print(self.age)
     self.atime = self.agetime(self.age)
 #        print(self.atime)
     self.Bags = []
@@ -54,16 +56,16 @@ class Passenger:
 #            print(self.Bags[k].volume)
       trackofbags = trackofbags + (float(self.Bags[k].volume) / Vmin)
     self.timestore = self.numbags * (trackofbags + self.atime)
-    print("For passenger")
-    print(self.thisnum)
-    print("bags")
-    print(self.numbags)
-    print("vol")
-    print(trackofbags)
-    print("age time")
-    print(self.atime)
-    print("tot")
-    print(self.timestore)
+    #print("For passenger")
+    # print(self.thisnum)
+    # print("bags")
+    # print(self.numbags)
+    # print("vol")
+    # print(trackofbags)
+    #print("age time")
+    # print(self.atime)
+    # print("tot")
+    # print(self.timestore)
 
   def agetime(self, a):
     if a < 25:
@@ -94,45 +96,109 @@ class Passenger:
     return(j)
 
   def moveDown(self, seating, processes):
-    seating[self.y, self.x] = self.thisnum
-    # self.display()
     self.y += 1
-    seating[self.y - 1, self.x] = 0
+    seating[self.y][self.x] = self.thisnum
+    seating[self.y - 1][self.x] = '_'
 
     processes.append([self.passNum, "down"])
+
+    return processes
 
     # time.sleep(1)
 
   def moveLeft(self, seating, processes):
-    seating[self.y, self.x] = self.thisnum
-    # self.display()
     self.x -= 1
-    seating[self.y, self.x + 1] = 0
+    seating[self.y][self.x] = self.thisnum
+    seating[self.y][self.x + 1] = '_'
 
     processes.append([self.passNum, "left"])
+
+    return processes
 
     # time.sleep(1)
 
   def moveRight(self, seating, processes):
-    seating[self.y, self.x] = self.thisnum
-    # self.display()
     self.x += 1
-    seating[self.y, self.x - 1] = 0
+    seating[self.y][self.x] = self.thisnum
+    seating[self.y][self.x - 1] = '_'
 
     processes.append([self.passNum, "right"])
+
+    return processes
 
     # time.sleep(1)
 
   def sitDown(self, seating, processes):
-    seating[self.y, self.x + 1] = self.thisnum
     self.seated = True
-
+    self.thisNum = 's'
+    seating[self.y][self.x] = self.thisNum
     processes.append([self.passNum, "sit"])
+    return processes
 
   def display(self, seating):
     print(seating)
     print("------------------")
 
+  def update(self, seating, processes):
+    # Enter plane from top middle one at a time:
+    if self.ent == False and seating[0][middle] == '_':
+      self.ent = True
+      seating[0][middle] == self.thisnum
+      self.y -= 1
+      processes = self.moveDown(seating, processes)
+
+    # For each standing passenger in plane
+    elif self.ent == True and self.seated == False:
+
+      # At correct seat -> sit down
+      if self.y == self.rowNum and self.x == self.colNum:
+        processes = self.sitDown(seating, processes)
+
+      # At correct row -> move to correct seat
+      elif self.y == self.rowNum:
+
+        # Stow bags
+        if self.timestore > 0:
+          self.timestore -= 1
+          if self.x > self.colNum:
+            processes.append([self.passNum, "stowL"])
+          else:
+            processes.append([self.passNum, "stowR"])
+        # Move left
+        elif self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
+          processes = self.moveLeft(seating, processes)
+        # Move right
+        elif self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
+          processes = self.moveRight(seating, processes)
+
+      # Incorrect row -> move down
+      elif self.y < self.rowNum and isEmpty(seating, self.x, self.y + 1):
+        processes = self.moveDown(seating, processes)
+
+    return processes
+
+
+def isEmpty(arr, x, y):
+  if arr[y][x] == 's' or arr[y][x] == '_':
+    return True
+  else:
+    return False
+
+
+def allSeated(arr):
+  for p in arr:
+    if p.seated == False:
+      return False
+  return True
+
+
+def initSeating(rows, cols):
+  seating = []
+  for i in range(0, rows):
+    seating.append([])
+    for j in range(0, cols):
+      seating[i].append('_')
+  return seating
 
 def manyPassengers(num, plane, views):
 
@@ -143,19 +209,19 @@ def manyPassengers(num, plane, views):
 
   seating = []
 
-  for i in range(0,plane[0]):
-    for j in range(0,plane[1]):
-      if((i==0 or i == plane[0]-1) and (j==0 or j==1 or j==plane[1]-1)):
+  for i in range(0, plane[0]):
+    for j in range(0, plane[1]):
+      if((i == 0 or i == plane[0] - 1) and (j == 0 or j == 1 or j == plane[1] - 1)):
         pass
       elif j != middle:
-        seating.append([i,j])
+        seating.append([i, j])
 
   passengers = []
 
   for i in range(0, num):
-    index = random.randint(0,len(seating)-1)
+    index = random.randint(0, len(seating) - 1)
     coord = seating[index]
-    passengers.append(Passenger(coord[0], coord[1], random.randint(0, 9), views[i], i))
+    passengers.append(Passenger(coord[0], coord[1], 'X', views[i], i))
     seating.remove(coord)
 
   return passengers
@@ -174,67 +240,53 @@ def runProgram(processes):
   print("Initializing values...")
 
   processes = processes
-  v = View(cols, rows)
-  v.addPass(capacity)
+  v = View()
+  v.addSprite(capacity)
   planeDimensions = [rows, cols]
-  passengers = manyPassengers(capacity, planeDimensions, v.passengers)
+  passengers = manyPassengers(capacity, planeDimensions, v.spriteGroup.sprites())
   v.moveMultiple(processes)
-  processes=[]
-  seating = np.zeros([rows, cols])
+  processes = []
+
+  seating = initSeating(rows, cols)
+
   for p in passengers:
-    p.timestore =3
+    p.timestore = 3
   ct = 0
   numpass = len(passengers)
 
+  v.timer = 0
+
   print("\nClick to Start")
-  v.win.getMouse()
 
-  while ct < numpass:
-    for passenger in passengers:
-      if passenger.ent == False and seating[passenger.y, passenger.x] == 0:
-        seating[passenger.y, passenger.x] = passenger.thisnum
-        passenger.ent = True
-        processes.append([passenger.passNum, "down"])
-      elif passenger.ent == True:
-        if passenger.colNum == passenger.x and passenger.rowNum == passenger.y:
-          # passenger.sitDown(seating)
-          if passenger.sit == False:
-            processes.append([passenger.passNum, "sit"])
-            passenger.sit = True
-          tmp = 0
-          for passenger in passengers:
-            if passenger.sit == True:
-              tmp += 1
-          if tmp == numpass:
-            ct = numpass
-        elif passenger.rowNum != passenger.y and seating[passenger.y + 1, passenger.x] == 0:
-          passenger.moveDown(seating, processes)
-          seating[passenger.y - 1, passenger.x] = 0
-          seating[passenger.y, passenger.x] = passenger.thisnum
-        elif passenger.rowNum == passenger.y and passenger.timestore > 0:
-          passenger.timestore = passenger.timestore - 1
-          if passenger.x > passenger.colNum:
-            processes.append([passenger.passNum, "stowL"])
-          else:
-            processes.append([passenger.passNum, "stowR"])
-        if passenger.timestore <= 0:
-          if passenger.colNum < middle and seating[passenger.y, passenger.x - 1] == 0:
-            if passenger.x != -1:
-              passenger.moveLeft(seating, processes)
-              seating[passenger.y, passenger.x + 1] = 0
-              seating[passenger.y, passenger.x] = passenger.thisnum
+  start = False
+  while start == False:
+    for event in pygame.event.get():
+      if event.type == pygame.MOUSEBUTTONDOWN:
+        start = True
 
-          elif passenger.colNum != passenger.x and seating[passenger.y, passenger.x + 1] == 0:
-            passenger.moveRight(seating, processes)
-            seating[passenger.y, passenger.x - 1] = 0
-            seating[passenger.y, passenger.x] = passenger.thisnum
-    print(processes)
-    v.moveMultiple(processes)
-    if ct != numpass:
-      print(seating)
-      print("-------------")
-      # time.sleep(1)
+  finished = False
+
+  while finished == False:
+    pygame.event.pump()
     processes = []
+    for passenger in passengers:
+      processes = passenger.update(seating, processes)
+    finished = allSeated(passengers)
+    v.moveMultiple(processes)
+
+    # if ct != numpass:
+    #  for line in seating:
+    #    print(line)
+    #  print("-------------")
+
+    processes = []
+
+  running = True
+  while running == True:
+    for event in pygame.event.get():
+      if event.type == pygame.MOUSEBUTTONDOWN:
+        pygame.quit()
+        running = False
 
 
 runProgram(processes)
