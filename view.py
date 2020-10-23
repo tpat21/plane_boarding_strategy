@@ -34,6 +34,10 @@ class View():
         self.height = tileHeight * columns + tileHeight
         self.win = self.createWindow()
         self.passengers = []
+        self.time = 0
+        self.time0 = 0
+        self.clock = Text(Point(self.width - 10, 10), "0")
+        self.clock.draw(self.win)
 
     def createWindow(self):
 
@@ -70,7 +74,7 @@ class View():
         # Instantiates a new passenger at the default starting location - the top of the aisle
 
         for i in range(0, num):
-            self.passengers.append(Passenger(self.width / 2, -1 * (tileHeight / 2) - (tileHeight*(2/3)), self.win))
+            self.passengers.append(Passenger(self.width / 2, -1 * (tileHeight / 2) - (tileHeight * (2 / 3)), self.win))
             self.drawPass(self.win, self.passengers[-1], nothing)
 
     def moveMultiple(self, processes):
@@ -95,6 +99,14 @@ class View():
                 else:
                     self.passengers[processes[j][0]].sitDown()
             time.sleep(speed / 8)
+        self.updateTime()
+
+    def startTime(self):
+        self.time0 = math.floor(time.clock())
+
+    def updateTime(self):
+        self.time = math.floor(time.clock())
+        self.clock.setText(str(self.time))
 
 
 class Passenger():
@@ -110,7 +122,7 @@ class Passenger():
         # Draws a passenger to win at its x and y coordinates
         # takes name (string) to indicate its sprite
 
-        if(self.y <= -(tileHeight/4)):
+        if(self.y <= -(tileHeight / 4)):
             name = nothing
         img = Image(Point(self.x, self.y), name)
         img.draw(self.win)
@@ -123,10 +135,10 @@ class Passenger():
         # x and y are either 0, 1 or -1, indicating positive or negative movement on the axis.
         # If x/y is not 0, the other must be 0
 
-        self.sprite.undraw()
+        #self.sprite.undraw()
         self.x += (tileHeight * x) / 8
         self.y += (tileHeight * y) / 8
-        self.sprite = self.drawPass(walk[frame])
+        #self.sprite = self.drawPass(walk[frame])
 
     # Following methods call smallWalk for different directions
 
@@ -155,7 +167,7 @@ class Passenger():
     def sitDown(self):
         if self.sitting == False:
             self.sprite.undraw()
-            self.y += (tileHeight*(2/3))
+            self.y += (tileHeight * (2 / 3))
             self.sprite = self.drawPass(sitting)
             self.sitting = True
 
