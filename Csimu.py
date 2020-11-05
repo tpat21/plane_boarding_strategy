@@ -200,7 +200,7 @@ def initSeating(rows, cols):
       seating[i].append('_')
   return seating
 
-def manyPassengers(num, plane, views):
+def randomBoarding(num, plane, views):
 
   # creates list of (num) passengers
   # (plane) indicates the number of rows and columns
@@ -243,7 +243,7 @@ def runProgram(processes):
   v = View()
   v.addSprite(capacity)
   planeDimensions = [rows, cols]
-  passengers = manyPassengers(capacity, planeDimensions, v.spriteGroup.sprites())
+  passengers = randomBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
   v.moveMultiple(processes)
   processes = []
 

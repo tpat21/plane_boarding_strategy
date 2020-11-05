@@ -205,7 +205,7 @@ class View():
         self.screen.blit(self.text, self.textRect)
 
         pygame.display.update()
-        # self.clock.tick(8)
+        self.clock.tick(8)
 
     def moveMultiple(self, processes):
         for i in range(0, 8):
