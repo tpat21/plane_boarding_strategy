@@ -320,9 +320,9 @@ def runProgram(processes):
   v = View()
   v.addSprite(capacity)
   planeDimensions = [rows, cols]
-  #passengers = randomBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
+  passengers = randomBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
   #passengers = steffensOptimalBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
-  passengers = outsideInBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
+  #passengers = outsideInBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
   v.moveMultiple(processes)
   processes = []
 
