@@ -200,7 +200,7 @@ def initSeating(rows, cols):
       seating[i].append('_')
   return seating
 
-def manyPassengers(num, plane, views):
+def randomBoarding(num, plane, views):
 
   # creates list of (num) passengers
   # (plane) indicates the number of rows and columns
@@ -226,6 +226,83 @@ def manyPassengers(num, plane, views):
 
   return passengers
 
+
+def steffensOptimalBoarding(num, plane, views):
+
+  passengers = []
+
+  for j in range(0, 3):
+    # Loop works outside in
+    for i in range(plane[0] - 1, -1, -2):
+
+      # Every other seat starting in back right
+
+      if j == 0 and (i == 0 or i == plane[0] - 1):
+        # Skips places where there are no seats
+        pass
+      else:
+        passengers.append(Passenger(i, 6 - j, 'X', views[len(passengers)], len(passengers)))
+
+    for i in range(plane[0] - 1, -1, -2):
+
+      # Every other seat starting in back left
+
+      if (j == 0 or j == 1) and (i == 0 or i == plane[0] - 1):
+        # Skips places where there are no seats
+        pass
+      else:
+        passengers.append(Passenger(i, j, 'X', views[len(passengers)], len(passengers)))
+
+    for i in range(plane[0] - 2, -1, -2):
+
+      # Every other seat starting one up from back right
+
+      passengers.append(Passenger(i, 6 - j, 'X', views[len(passengers)], len(passengers)))
+
+    for i in range(plane[0] - 2, -1, -2):
+
+      # Every other seat starting one up from back left
+
+      passengers.append(Passenger(i, j, 'X', views[len(passengers)], len(passengers)))
+
+  return passengers
+
+
+def outsideInBoarding(num, plane, views):
+  passengers = []
+
+  g = [[], [], []]
+
+  for i in range(0, 3):
+    # Creates three groups of seats: rows 0 and 6, rows 1 and 5, and rows 2 and 4
+    for j in range(0, plane[0]):
+
+      if (i == 0 or i == 1) and (j == 0 or j == plane[0] - 1):
+        # Does not list places with no seats
+        pass
+      else:
+        g[i].append([i, j])
+
+      if i == 0 and (j == 0 or j == plane[0] - 1):
+        # Does not list places with no seats
+        pass
+      else:
+        g[i].append([plane[1] - 1 - i, j])
+
+  p = 0
+
+  for i in range(0, 3):
+    # Randomly assigns passengers to seats in each group, starting from outside group, working in
+    for j in range(0, len(g[i])):
+      index = random.randint(0, len(g[i]) - 1)
+      coord = g[i][index]
+      passengers.append(Passenger(coord[1], coord[0], 'X', views[p], p))
+      g[i].remove(coord)
+      p += 1
+
+  return passengers
+
+
 # 132 seats, 23 rows, 6 seats per row (rows 1 and 23 have only 3 seats)
 
 
@@ -243,7 +320,9 @@ def runProgram(processes):
   v = View()
   v.addSprite(capacity)
   planeDimensions = [rows, cols]
-  passengers = manyPassengers(capacity, planeDimensions, v.spriteGroup.sprites())
+  passengers = randomBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
+  #passengers = steffensOptimalBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
+  #passengers = outsideInBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
   v.moveMultiple(processes)
   processes = []
 
@@ -267,6 +346,10 @@ def runProgram(processes):
   finished = False
 
   while finished == False:
+    for event in pygame.event.get():
+      if event.type == pygame.MOUSEBUTTONDOWN:
+        pygame.quit()
+        finished = True
     pygame.event.pump()
     processes = []
     for passenger in passengers:

@@ -199,13 +199,19 @@ class View():
         self.tileGroup.draw(self.screen)
         self.spriteGroup.draw(self.screen)
 
-        self.text = self.font.render(str(math.floor(self.timer / 60)) + ":" + str(self.timer % 60), True, WHITE, BLACK)
+        secs = self.timer % 60
+        if secs < 10:
+            secStr = str("0" + str(secs))
+        else:
+            secStr = str(secs)
+
+        self.text = self.font.render(str(math.floor(self.timer / 60)) + ":" + secStr, True, WHITE, BLACK)
         self.textRect = self.text.get_rect()
         self.textRect.center = (wingWidth / 2, tileHeight / 2)
         self.screen.blit(self.text, self.textRect)
 
         pygame.display.update()
-        # self.clock.tick(8)
+        #self.clock.tick(8)
 
     def moveMultiple(self, processes):
         for i in range(0, 8):
