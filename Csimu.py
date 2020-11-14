@@ -193,6 +193,7 @@ class Passenger:
 
         # Stow bags
         if self.timestore > 0:
+          seating[self.y][self.x]='X'
           if isEmpty(seating,self.x,self.y+1):
             self.timestore -= 1
             if self.x > self.colNum:
