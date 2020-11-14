@@ -10,7 +10,7 @@ rows = 23
 cols = 7
 middle = int(math.ceil(cols / 2)) - 1
 #seating = np.zeros([rows, cols])
-Vmin = 17 * 11 * 7
+Vmid = 19 * 13 * 8
 processes = []
 
 
@@ -19,10 +19,14 @@ class Bag:
     self.volume = self.bagvol()
 
   def bagvol(self):
-    l = random.randrange(17, 22, 1)
-    w = random.randrange(11, 14, 1)
-    h = random.randrange(7, 9, 1)
+    l = random.randrange(17, 23, 1)
+    w = random.randrange(11, 15, 1)
+    h = random.randrange(7, 10, 1)
     return(l * w * h)
+  
+  def volconst(self):
+    sk=self.volume/Vmid
+    return(sk)
 
 
 class Passenger:
@@ -50,12 +54,12 @@ class Passenger:
     self.atime = self.agetime(self.age)
 #        print(self.atime)
     self.Bags = []
-    trackofbags = 0
-    for k in range(0, self.numbags - 1):
+    self.timestore = 0
+    for k in range(0, self.numbags):
       self.Bags.append(Bag())
 #            print(self.Bags[k].volume)
-      trackofbags = trackofbags + (float(self.Bags[k].volume) / Vmin)
-    self.timestore = self.numbags * (trackofbags + self.atime)
+      self.timestore = self.timestore + (float(self.Bags[k].volconst())*self.atime)
+    self.timestore = int(self.timestore)
     #print("For passenger")
     # print(self.thisnum)
     # print("bags")
@@ -68,28 +72,32 @@ class Passenger:
     # print(self.timestore)
 
   def agetime(self, a):
+    if a>80:
+      a=80
+    elif a<3:
+      a=3
     if a < 25:
-      a = (((a / 2.5) - 10)**2) + 3
+      a = (((a / 4) - 6.25)**2) + 5
     else:
-      a = (((a / 10) - 2.5)**2) + 3
+      a = (((a / 11.5) - (25/11.5))**2) + 5
     return(a)
 
   def setbags(self):
-    j = np.random.normal(2, 1.5, 1)
+    j = random.randrange(100)
     if self.age <= 10:
-      if j < 1.5:
+      if j < 40:
         j = 0
       else:
         j = 1
-    elif self.age >= 65:
-      if j < 2:
+    elif self.age > 65:
+      if j < 40:
         j = 1
       else:
         j = 2
     else:
-      if j < 1:
+      if j < 10:
         j = 1
-      elif j > 3:
+      elif j > 89:
         j = 3
       else:
         j = 2
@@ -107,22 +115,48 @@ class Passenger:
     # time.sleep(1)
 
   def moveLeft(self, seating, processes):
-    self.x -= 1
-    seating[self.y][self.x] = self.thisnum
-    seating[self.y][self.x + 1] = '_'
-
-    processes.append([self.passNum, "left"])
+    test=0
+    thisok=0
+    if seating[self.y][self.x]=='X':
+        seating[self.y][self.x]='_'
+        test+=1
+    if seating[self.y][self.x-1]!='s':
+        test+=1
+        seating[self.y][self.x-1]='X'
+        thisok=1
+    if test!=2 and self.passinfront!=2:
+        self.passinfront+=1
+    if test==2 or self.passinfront==2 or thisok==0:
+        if self.x>0:
+            self.x -= 1
+        processes.append([self.passNum, "left"])
+        self.passinfront=0
+    else:
+        processes.append([self.passNum, "nothingL"])
 
     return processes
 
     # time.sleep(1)
 
   def moveRight(self, seating, processes):
-    self.x += 1
-    seating[self.y][self.x] = self.thisnum
-    seating[self.y][self.x - 1] = '_'
-
-    processes.append([self.passNum, "right"])
+    test=0
+    thisok=0
+    if isEmpty(seating,self.x,self.y)==False:
+        seating[self.y][self.x]='_'
+        test+=1
+    if seating[self.y][self.x+1]!='s':
+        test+=1
+        seating[self.y][self.x+1]='X'
+        thisok=1
+    if test!=2 and self.passinfront!=2:
+        self.passinfront+=1
+    if test==2 or self.passinfront==2 or thisok==0:
+        if self.x<cols-1:
+            self.x += 1
+        processes.append([self.passNum, "right"])
+        self.passinfront=0
+    else:
+        processes.append([self.passNum, "nothingR"])
 
     return processes
 
@@ -159,16 +193,19 @@ class Passenger:
 
         # Stow bags
         if self.timestore > 0:
-          self.timestore -= 1
-          if self.x > self.colNum:
-            processes.append([self.passNum, "stowL"])
+          if isEmpty(seating,self.x,self.y+1):
+            self.timestore -= 1
+            if self.x > self.colNum:
+              processes.append([self.passNum, "stowL"])
+            else:
+              processes.append([self.passNum, "stowR"])
           else:
-            processes.append([self.passNum, "stowR"])
+              processes.append([self.passNum, "nothingR"])
         # Move left
-        elif self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
+        elif self.x > self.colNum:
           processes = self.moveLeft(seating, processes)
         # Move right
-        elif self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
+        elif self.x < self.colNum:
           processes = self.moveRight(seating, processes)
 
       # Incorrect row -> move down
@@ -179,6 +216,8 @@ class Passenger:
 
 
 def isEmpty(arr, x, y):
+  if y>rows-1:
+    return True
   if arr[y][x] == 's' or arr[y][x] == '_':
     return True
   else:
@@ -388,6 +427,84 @@ def optimalStrategy(num, plane, views):
 
     return(passengers)
 
+def zoneRotate(num,plane,views,numgroups):
+          seating = []
+          for i in range(0, plane[0]):
+              w=0
+              for j in range(0, plane[1]):
+                  if((i == 0 or i == plane[0] - 1) and (j == 0 or j == 1 or j == plane[1] - 1)):
+                      pass
+                  elif j != middle:
+                      if j>middle:
+                          seating.insert(0,[i, j])
+                      else:
+                          seating.insert(w,[i,j])
+                          w=w+1
+
+          passengers = []
+          j=math.ceil(plane[0]/numgroups)*(plane[1]-1)
+          i=0
+          ct=0
+          temp=[]
+          while i<num:
+              k=j
+              while k>0 and i<num:
+                  if len(seating)<j:
+                      index=len(seating)-1
+                      coord = seating[index]
+                      temp.append(Passenger(coord[0], coord[1], 'X', views[i], i))
+                  elif (numgroups-ct)%2==0:
+                      index=0
+                      coord = seating[index]
+                      temp.append(Passenger(coord[0], coord[1], 'X', views[i], i))
+                  else:
+                      index=len(seating)-k
+                      coord = seating[index]
+                      temp.append(Passenger(coord[0], coord[1], 'X', views[i], i))
+                  seating.remove(coord)
+                  k=k-1
+                  i=i+1
+              random.shuffle(temp)
+              for why in range(0,len(temp)):
+                  passengers.append(temp[why])
+              ct=ct+1
+              temp.clear()
+
+          return passengers
+        
+def backToFront(num,plane,views,numgroups):
+          passengers = []
+          big=[]
+          k=0
+          size=math.ceil(plane[0]/numgroups)*(plane[1]-1)
+          for i in range(0, plane[0]):
+              w=0
+              for j in range(0, plane[1]):
+                  if((i == 0 or i == plane[0] - 1) and (j == 0 or j == 1 or j == plane[1] - 1)):
+                      pass
+                  elif j != middle:
+                      if j>middle:
+                         big.insert(0,Passenger(i, j,'X',views[k],k))
+                      else:
+                         big.insert(w,Passenger(i,j,'X',views[k],k))
+                         w=w+1
+                      k=k+1
+          thi=size
+          temp=[]
+          for check in range(0,num):
+              if check<num:
+                  temp.append(big[check])
+                  thi=thi-1
+              if thi==0 or check==num-1:
+                  random.shuffle(temp)
+                  for y in range(0,len(temp)):
+                      passengers.append(temp[y])
+#                      print(rows)
+#                      print(temp[y].rowNum)
+                  temp.clear()
+                  thi=size
+
+          return passengers
 
 def runProgram(processes):
 
