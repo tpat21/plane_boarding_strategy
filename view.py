@@ -96,6 +96,10 @@ class View():
                     self.passengers[processes[j][0]].stow(i % 4, "r")
                 elif processes[j][1] == 'stowL':
                     self.passengers[processes[j][0]].stow(i % 4, "l")
+                elif processes[j][1] == 'nothingL':
+                    self.passengers[processes[j][0]].smallLeft(i%4)
+                elif processes[j][1] == 'nothingR':
+                    self.passengers[processes[j][0]].smallRight(i%4)
                 else:
                     self.passengers[processes[j][0]].sitDown()
             time.sleep(speed / 8)
