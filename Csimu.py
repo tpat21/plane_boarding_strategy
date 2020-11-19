@@ -160,13 +160,13 @@ class Passenger:
       elif self.y == self.rowNum:
 
         # Stow bags
-        if self.timestore > 0:
+        if self.timestore > 0 and (self.y >= rows -1 or seating[self.y+1][self.x] == '_'):
           self.timestore -= 1
         # Move left
-        elif self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
+        elif self.timestore == 0 and self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
           self.moveLeft(seating)
         # Move right
-        elif self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
+        elif self.timestore == 0 and self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
           self.moveRight(seating)
 
       # Incorrect row -> move down
@@ -246,10 +246,10 @@ class gPassenger(Passenger):
           else:
               processes.append([self.passNum, "nothingR"])
         # Move left
-        elif self.x > self.colNum:
+        elif self.timestore == 0 and self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
           processes = self.moveLeft(seating, processes)
         # Move right
-        elif self.x < self.colNum:
+        elif self.timestore == 0 and self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
           processes = self.moveRight(seating, processes)
 
       # Incorrect row -> move down
@@ -425,6 +425,13 @@ def optimalStrategy(num, plane, views):
     group2 = []
     group3 = []
     group4 = []
+
+    for j in range(0,3):
+      # Board all of the even rows on the left side
+      for i in range(plane[0] -2, -1, -1):
+        group1.append([i,j])
+        random.shuffle(group1)
+
     for j in range(0,3):
         # Board all of the even rows on the right side
         for i in range(plane[0] - 2, -1, -2):
