@@ -425,6 +425,13 @@ def optimalStrategy(num, plane, views):
     group2 = []
     group3 = []
     group4 = []
+
+    for j in range(0,3):
+      # Board all of the even rows on the left side
+      for i in range(plane[0] -2, -1, -1):
+        group1.append([i,j])
+        random.shuffle(group1)
+
     for j in range(0,3):
         # Board all of the even rows on the right side
         for i in range(plane[0] - 2, -1, -2):
