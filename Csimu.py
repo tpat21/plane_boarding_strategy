@@ -156,13 +156,13 @@ class Passenger:
       elif self.y == self.rowNum:
 
         # Stow bags
-        if self.timestore > 0:
+        if self.timestore > 0 and (self.y >= rows -1 or seating[self.y+1][self.x] == '_'):
           self.timestore -= 1
         # Move left
-        elif self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
+        elif self.timestore == 0 and self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
           self.moveLeft(seating)
         # Move right
-        elif self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
+        elif self.timestore == 0 and self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
           self.moveRight(seating)
 
       # Incorrect row -> move down
@@ -231,17 +231,17 @@ class gPassenger(Passenger):
       elif self.y == self.rowNum:
 
         # Stow bags
-        if self.timestore > 0:
+        if self.timestore > 0 and (self.y >= rows-1 or seating[self.y+1][self.x] =='_'):
           self.timestore -= 1
           if self.x > self.colNum:
             processes.append([self.passNum, "stowL"])
           else:
             processes.append([self.passNum, "stowR"])
         # Move left
-        elif self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
+        elif self.timestore == 0 and self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
           processes = self.moveLeft(seating, processes)
         # Move right
-        elif self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
+        elif self.timestore == 0 and self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
           processes = self.moveRight(seating, processes)
 
       # Incorrect row -> move down
