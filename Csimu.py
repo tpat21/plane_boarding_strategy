@@ -20,10 +20,14 @@ class Bag:
     self.volume = self.bagvol()
 
   def bagvol(self):
-    l = random.randrange(17, 22, 1)
-    w = random.randrange(11, 14, 1)
-    h = random.randrange(7, 9, 1)
+    l = random.randrange(17, 23, 1)
+    w = random.randrange(11, 15, 1)
+    h = random.randrange(7, 10, 1)
     return(l * w * h)
+  
+  def volconst(self):
+    sk=self.volume/Vmid
+    return(sk)
 
   def volconst(self):
     sk=self.volume/Vmid
@@ -232,16 +236,20 @@ class gPassenger(Passenger):
 
         # Stow bags
         if self.timestore > 0:
-          self.timestore -= 1
-          if self.x > self.colNum:
-            processes.append([self.passNum, "stowL"])
+          seating[self.y][self.x]='X'
+          if isEmpty(seating,self.x,self.y+1):
+            self.timestore -= 1
+            if self.x > self.colNum:
+              processes.append([self.passNum, "stowL"])
+            else:
+              processes.append([self.passNum, "stowR"])
           else:
-            processes.append([self.passNum, "stowR"])
+              processes.append([self.passNum, "nothingR"])
         # Move left
-        elif self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
+        elif self.x > self.colNum:
           processes = self.moveLeft(seating, processes)
         # Move right
-        elif self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
+        elif self.x < self.colNum:
           processes = self.moveRight(seating, processes)
 
       # Incorrect row -> move down
@@ -252,6 +260,8 @@ class gPassenger(Passenger):
 
 
 def isEmpty(arr, x, y):
+  if y>rows-1:
+    return True
   if arr[y][x] == 's' or arr[y][x] == '_':
     return True
   else:
@@ -415,14 +425,6 @@ def optimalStrategy(num, plane, views):
     group2 = []
     group3 = []
     group4 = []
-
-
-    for j in range(0,3):
-        # Board all of the even rows on the left side
-        for i in range(plane[0] - 2, -1, -2):
-            group1.append([i,j])
-            random.shuffle(group1)
-
     for j in range(0,3):
         # Board all of the even rows on the right side
         for i in range(plane[0] - 2, -1, -2):
@@ -488,7 +490,7 @@ def optimalStrategy(num, plane, views):
           passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
 
 
-    return(passengers)
+    return(passengers)   
 
 def zoneRotate(num,plane,views,numgroups):
   seating = []

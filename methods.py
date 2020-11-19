@@ -12,8 +12,81 @@ class Methods:
     def efficientMethods():
         pass
 
-    def optimalStrategy():
-        pass
+    def optimalStrategy(num, plane, views):
+
+        passengers = []
+
+        # Group 1: Board all of the even rows on the left side
+        # Group 2: Board all of the even rows on the right side
+        # Group 3: Board all of the odd rows on the left side
+        # Group 4: Board all of the odd rows on the right side
+
+        group1 = []
+        group2 = []
+        group3 = []
+        group4 = []
+
+
+        for j in range(0,3):
+            # Board all of the even rows on the left side
+            for i in range(plane[0] - 2, -1, -2):
+                group1.append([i,j])
+                random.shuffle(group1)
+
+        for j in range(0,3):
+            # Board all of the even rows on the right side
+            for i in range(plane[0] - 2, -1, -2):
+                group2.append([i,6-j])
+                random.shuffle(group2)
+
+
+        for j in range(0,3):
+            # Board all of the odd rows on the left side
+            for i in range(plane[0] - 1, -1, -2):
+
+                if (j == 0 or j == 1) and (i == 0 or i == plane[0] - 1):
+                    # Skips places where there are no seats
+                    pass
+                else:
+                    group3.append([i, j])
+                    random.shuffle(group3)
+
+
+
+        for j in range(0, 3):
+            # Board all of the odd rows on the right side
+            for i in range(plane[0] - 1, -1, -2):
+                if j == 0 and (i == 0 or i == plane[0] - 1):
+
+                    pass
+                else:
+                    group4.append([i,6 - j])
+                    random.shuffle(group4)
+
+
+        for i in range(len(group1)):
+            x = (group1[i][0])
+            y = (group1[i][1])
+            passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+        for i in range(len(group2)):
+            x = (group2[i][0])
+            y = (group2[i][1])
+            passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+        for i in range(len(group3)):
+            x = (group3[i][0])
+            y = (group3[i][1])
+            passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+
+        for i in range(len(group4)):
+            x = (group4[i][0])
+            y = (group4[i][1])
+            passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+
+        return(passengers)
 
     def randomBoarding(num, plane, views):
 
