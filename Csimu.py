@@ -16,6 +16,7 @@ middle = int(math.ceil(cols / 2)) - 1
 Vmin = 17 * 11 * 7
 Vmid = 19 * 13 * 8
 processes = []
+import pandas as pd
 
 
 class Bag:
@@ -803,6 +804,12 @@ def runProgram(processes):
     else:
       times.append(quickRun(passengers, seating, numRuns))
 
+
+  # To Write to an excel file:
+  #fileName = 'times1.xlsx'
+  #df = pd.DataFrame(times)
+  #df.to_excel(fileName)
+
   if numRuns != 1:
     stdMean = stDev(times)
     tAve = stdMean[1]
@@ -822,6 +829,31 @@ def runProgram(processes):
     else:
       print("Standard Deviation: "+str(sMinutes)+":"+str(sSeconds))
 
+  for i in range(0,len(times)):
+    times[i] = times[i]/60
+
+  return times
 
 
-runProgram(processes)
+stop = False
+manyTimes = []
+while stop == False:
+  processes = []
+  manyTimes.append(runProgram(processes))
+  ans = 0
+  while ans != 1 and ans != 2:
+    try:
+      print("\nContinue?\n1. Yes\n2. No")
+      ans = int(input())
+    except ValueError:
+      pass
+    if ans != 1 and ans != 2:
+      print("\n! Invalid Input !\n")
+  if ans == 2:
+    stop = True
+
+#To Write to an excel file:
+#fileName = 'times5.xlsx'
+#df = pd.DataFrame(manyTimes)
+#df.to_excel(fileName)
+
