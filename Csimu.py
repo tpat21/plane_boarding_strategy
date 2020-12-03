@@ -5,9 +5,12 @@ from threading import *
 import math
 from PyView import *
 
-capacity = 132
-rows = 23
-cols = 7
+capacity = int(input("Plane capacity: "))
+rows = int(input("Plane rows: "))
+cols =  = int(input("Plane columns: "))
+#capacity = 132
+#rows = 23
+#cols = 7
 middle = int(math.ceil(cols / 2)) - 1
 #seating = np.zeros([rows, cols])
 Vmin = 17 * 11 * 7
@@ -428,7 +431,7 @@ def optimalStrategy(num, plane, views):
 
     for j in range(0,3):
       # Board all of the even rows on the left side
-      for i in range(plane[0] -2, -1, -1):
+      for i in range(plane[0] -2, -1, -2):
         group1.append([i,j])
         random.shuffle(group1)
 
