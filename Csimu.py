@@ -10,6 +10,7 @@ rows = 23
 cols = 7
 middle = int(math.ceil(cols / 2)) - 1
 #seating = np.zeros([rows, cols])
+Vmin = 17 * 11 * 7
 Vmid = 19 * 13 * 8
 processes = []
 
@@ -28,16 +29,17 @@ class Bag:
     sk=self.volume/Vmid
     return(sk)
 
+  def volconst(self):
+    sk=self.volume/Vmid
+    return(sk)
 
 class Passenger:
-  def __init__(self, rowNum, colNum, thisnum, sprite, passNum):
+
+  def __init__(self, rowNum, colNum, thisnum, passNum):
     self.passNum = passNum
 
     self.rowNum = rowNum
     self.colNum = colNum
-
-    self.sprite = sprite
-    processes.append([self.passNum, "down"])
 
     self.seated = False
 
@@ -50,26 +52,22 @@ class Passenger:
     self.sit = False
     self.age = float(int(np.random.normal(39, 19.5, 1)))
     self.numbags = self.setbags()
-    # print(self.age)
     self.atime = self.agetime(self.age)
-#        print(self.atime)
     self.Bags = []
+    trackofbags = 0
+
     self.timestore = 0
+
     for k in range(0, self.numbags):
       self.Bags.append(Bag())
-#            print(self.Bags[k].volume)
       self.timestore = self.timestore + (float(self.Bags[k].volconst())*self.atime)
+
     self.timestore = int(self.timestore)
-    #print("For passenger")
-    # print(self.thisnum)
-    # print("bags")
-    # print(self.numbags)
-    # print("vol")
-    # print(trackofbags)
-    #print("age time")
-    # print(self.atime)
-    # print("tot")
-    # print(self.timestore)
+
+    self.passInFront = 0
+    self.speed = 1
+
+    self.mem = '_'
 
   def agetime(self, a):
     if a>80:
@@ -103,75 +101,120 @@ class Passenger:
         j = 2
     return(j)
 
-  def moveDown(self, seating, processes):
+  def moveDown(self, seating):
     self.y += 1
     seating[self.y][self.x] = self.thisnum
     seating[self.y - 1][self.x] = '_'
 
-    processes.append([self.passNum, "down"])
+  def moveLeft(self, seating):
+    if seating[self.y][self.x-1] == 's' and self.passInFront != 1:
+      self.passInFront = 1
 
-    return processes
+    elif seating[self.y][self.x-1] == '_' or  self.passInFront != 0:
+      tmp = seating[self.y][self.x-1]
+      if self.passInFront != 0:
+        self.passInFront -= 1
+      self.x -= 1
+      seating[self.y][self.x] = self.thisnum
+      seating[self.y][self.x+1] = self.mem
+      self.mem = tmp
 
-    # time.sleep(1)
+  def moveRight(self, seating):
+    if seating[self.y][self.x+1] == 's' and self.passInFront != 1:
+      self.passInFront = 1
 
-  def moveLeft(self, seating, processes):
-    test=0
-    thisok=0
-    if seating[self.y][self.x]=='X':
-        seating[self.y][self.x]='_'
-        test+=1
-    if seating[self.y][self.x-1]!='s':
-        test+=1
-        seating[self.y][self.x-1]='X'
-        thisok=1
-    if test!=2 and self.passinfront!=2:
-        self.passinfront+=1
-    if test==2 or self.passinfront==2 or thisok==0:
-        if self.x>0:
-            self.x -= 1
-        processes.append([self.passNum, "left"])
-        self.passinfront=0
-    else:
-        processes.append([self.passNum, "nothingL"])
+    elif seating[self.y][self.x+1] == '_' or  self.passInFront != 0:
+      tmp = seating[self.y][self.x+1]
+      if self.passInFront != 0:
+        self.passInFront -= 1
+      self.x += 1
+      seating[self.y][self.x] = self.thisnum
+      seating[self.y][self.x-1] = self.mem
+      self.mem = tmp
 
-    return processes
-
-    # time.sleep(1)
-
-  def moveRight(self, seating, processes):
-    test=0
-    thisok=0
-    if isEmpty(seating,self.x,self.y)==False:
-        seating[self.y][self.x]='_'
-        test+=1
-    if seating[self.y][self.x+1]!='s':
-        test+=1
-        seating[self.y][self.x+1]='X'
-        thisok=1
-    if test!=2 and self.passinfront!=2:
-        self.passinfront+=1
-    if test==2 or self.passinfront==2 or thisok==0:
-        if self.x<cols-1:
-            self.x += 1
-        processes.append([self.passNum, "right"])
-        self.passinfront=0
-    else:
-        processes.append([self.passNum, "nothingR"])
-
-    return processes
-
-    # time.sleep(1)
-
-  def sitDown(self, seating, processes):
+  def sitDown(self, seating):
     self.seated = True
     self.thisNum = 's'
     seating[self.y][self.x] = self.thisNum
-    processes.append([self.passNum, "sit"])
-    return processes
 
   def display(self, seating):
     print(seating)
     print("------------------")
+
+  def update(self, seating):
+    # Enter plane from top middle one at a time:
+    if self.ent == False and seating[0][middle] == '_':
+      self.ent = True
+      seating[0][middle] == self.thisnum
+      self.y -= 1
+      self.moveDown(seating)
+
+    # For each standing passenger in plane
+    elif self.ent == True and self.seated == False:
+
+      # At correct seat -> sit down
+      if self.y == self.rowNum and self.x == self.colNum:
+        self.sitDown(seating)
+
+      # At correct row -> move to correct seat
+      elif self.y == self.rowNum:
+
+        # Stow bags
+        if self.timestore > 0 and (self.y >= rows -1 or seating[self.y+1][self.x] == '_'):
+          self.timestore -= 1
+        # Move left
+        elif self.timestore == 0 and self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
+          self.moveLeft(seating)
+        # Move right
+        elif self.timestore == 0 and self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
+          self.moveRight(seating)
+
+      # Incorrect row -> move down
+      elif self.y < self.rowNum and isEmpty(seating, self.x, self.y + 1):
+        self.moveDown(seating)
+
+
+class gPassenger(Passenger):
+  def __init__(self, rowNum, colNum, thisnum, sprite, passNum):
+    super().__init__(rowNum, colNum, thisnum, passNum)
+    self.sprite = sprite
+    processes.append([self.passNum, "down"])
+
+  def moveDown(self, seating, processes):
+    super().moveDown(seating)
+    processes.append([self.passNum, "down"])
+    return processes
+
+  def moveLeft(self, seating, processes):
+    super().moveLeft(seating)
+
+    if self.passInFront != 0 and self.speed == 1:
+      processes.append([self.passNum, "half"])
+      self.speed = 0.5
+    elif self.passInFront == 0 and self.speed == 0.5:
+      processes.append([self.passNum, "double"])
+      self.speed = 1
+
+    processes.append([self.passNum, "left"])
+    return processes
+
+  def moveRight(self, seating, processes):
+    super().moveRight(seating)
+
+    if self.passInFront != 0 and self.speed == 1:
+      processes.append([self.passNum, "half"])
+      self.speed = 0.5
+    elif self.passInFront == 0 and self.speed == 0.5:
+      processes.append([self.passNum, "double"])
+      self.speed = 1
+
+    processes.append([self.passNum, "right"])
+    return processes
+
+  def sitDown(self, seating, processes):
+    super().sitDown(seating)
+    processes.append([self.passNum, "sit"])
+    return processes
 
   def update(self, seating, processes):
     # Enter plane from top middle one at a time:
@@ -203,10 +246,10 @@ class Passenger:
           else:
               processes.append([self.passNum, "nothingR"])
         # Move left
-        elif self.x > self.colNum:
+        elif self.timestore == 0 and self.x > self.colNum and isEmpty(seating, self.x - 1, self.y):
           processes = self.moveLeft(seating, processes)
         # Move right
-        elif self.x < self.colNum:
+        elif self.timestore == 0 and self.x < self.colNum and isEmpty(seating, self.x + 1, self.y):
           processes = self.moveRight(seating, processes)
 
       # Incorrect row -> move down
@@ -261,7 +304,12 @@ def randomBoarding(num, plane, views):
   for i in range(0, num):
     index = random.randint(0, len(seating) - 1)
     coord = seating[index]
-    passengers.append(Passenger(coord[0], coord[1], 'X', views[i], i))
+
+    if views == []:
+      # information pertaining to view not needed if [] is passed in for views
+      passengers.append(Passenger(coord[0], coord[1], 'X', i))
+    else:
+      passengers.append(gPassenger(coord[0], coord[1], 'X', views[i], i))
     seating.remove(coord)
 
   return passengers
@@ -281,7 +329,11 @@ def steffensOptimalBoarding(num, plane, views):
         # Skips places where there are no seats
         pass
       else:
-        passengers.append(Passenger(i, 6 - j, 'X', views[len(passengers)], len(passengers)))
+        if views == []:
+          # information pertaining to view not needed if [] is passed in for views
+          passengers.append(Passenger(i, 6 - j, 'X', len(passengers)))
+        else:
+          passengers.append(gPassenger(i, 6 - j, 'X', views[len(passengers)], len(passengers)))
 
     for i in range(plane[0] - 1, -1, -2):
 
@@ -291,19 +343,31 @@ def steffensOptimalBoarding(num, plane, views):
         # Skips places where there are no seats
         pass
       else:
-        passengers.append(Passenger(i, j, 'X', views[len(passengers)], len(passengers)))
+        if views == []:
+          # information pertaining to view not needed if [] is passed in for views
+          passengers.append(Passenger(i, j, 'X', len(passengers)))
+        else:
+          passengers.append(gPassenger(i, j, 'X', views[len(passengers)], len(passengers)))
 
     for i in range(plane[0] - 2, -1, -2):
 
       # Every other seat starting one up from back right
 
-      passengers.append(Passenger(i, 6 - j, 'X', views[len(passengers)], len(passengers)))
+      if views == []:
+        # information pertaining to view not needed if [] is passed in for views
+        passengers.append(Passenger(i, 6 - j, 'X', len(passengers)))
+      else:
+        passengers.append(gPassenger(i, 6 - j, 'X', views[len(passengers)], len(passengers)))
 
     for i in range(plane[0] - 2, -1, -2):
 
       # Every other seat starting one up from back left
 
-      passengers.append(Passenger(i, j, 'X', views[len(passengers)], len(passengers)))
+      if views == []:
+        # information pertaining to view not needed if [] is passed in for views
+        passengers.append(Passenger(i, j, 'X', len(passengers)))
+      else:
+        passengers.append(gPassenger(i, j, 'X', views[len(passengers)], len(passengers)))
 
   return passengers
 
@@ -336,21 +400,17 @@ def outsideInBoarding(num, plane, views):
     for j in range(0, len(g[i])):
       index = random.randint(0, len(g[i]) - 1)
       coord = g[i][index]
-      passengers.append(Passenger(coord[1], coord[0], 'X', views[p], p))
+
+      if views == []:
+        # information pertaining to view not needed if [] is passed in for views
+        passengers.append(Passenger(coord[1], coord[0], 'X', p))
+      else:
+        passengers.append(gPassenger(coord[1], coord[0], 'X', views[p], p))
+
       g[i].remove(coord)
       p += 1
 
   return passengers
-
-
-# 132 seats, 23 rows, 6 seats per row (rows 1 and 23 have only 3 seats)
-
-
-#p1 = Passenger(4, 0, 2, v.passengers[0], 0)
-#p2 = Passenger(3, 4, 3, v.passengers[1], 1)
-#p3 = Passenger(2, 3, 4, v.passengers[2], 2)
-#p4 = Passenger(1, 1, 5, v.passengers[3], 3)
-
 
 def optimalStrategy(num, plane, views):
 
@@ -366,12 +426,11 @@ def optimalStrategy(num, plane, views):
     group3 = []
     group4 = []
 
-
     for j in range(0,3):
-        # Board all of the even rows on the left side
-        for i in range(plane[0] - 2, -1, -2):
-            group1.append([i,j])
-            random.shuffle(group1)
+      # Board all of the even rows on the left side
+      for i in range(plane[0] -2, -1, -1):
+        group1.append([i,j])
+        random.shuffle(group1)
 
     for j in range(0,3):
         # Board all of the even rows on the right side
@@ -407,128 +466,137 @@ def optimalStrategy(num, plane, views):
     for i in range(len(group1)):
         x = (group1[i][0])
         y = (group1[i][1])
-        passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+        if views == []:
+          passengers.append(Passenger(x, y , 'X', len(passengers)))
+        else:
+          passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
 
     for i in range(len(group2)):
         x = (group2[i][0])
         y = (group2[i][1])
-        passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+        if views == []:
+          passengers.append(Passenger(x, y , 'X', len(passengers)))
+        else:
+          passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
 
     for i in range(len(group3)):
         x = (group3[i][0])
         y = (group3[i][1])
-        passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+        if views == []:
+          passengers.append(Passenger(x, y , 'X', len(passengers)))
+        else:
+          passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
 
 
     for i in range(len(group4)):
         x = (group4[i][0])
         y = (group4[i][1])
-        passengers.append(Passenger(x, y , 'X', views[len(passengers)], len(passengers)))
+        if views == []:
+          passengers.append(Passenger(x, y , 'X', len(passengers)))
+        else:
+          passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
 
 
-    return(passengers)
+    return(passengers)   
 
 def zoneRotate(num,plane,views,numgroups):
-          seating = []
-          for i in range(0, plane[0]):
-              w=0
-              for j in range(0, plane[1]):
-                  if((i == 0 or i == plane[0] - 1) and (j == 0 or j == 1 or j == plane[1] - 1)):
-                      pass
-                  elif j != middle:
-                      if j>middle:
-                          seating.insert(0,[i, j])
-                      else:
-                          seating.insert(w,[i,j])
-                          w=w+1
+  seating = []
+  for i in range(0, plane[0]):
+    w=0
+    for j in range(0, plane[1]):
+      if((i == 0 or i == plane[0] - 1) and (j == 0 or j == 1 or j == plane[1] - 1)):
+        pass
+      elif j != middle:
+        if j>middle:
+          seating.insert(0,[i, j])
+        else:
+          seating.insert(w,[i,j])
+          w=w+1
 
-          passengers = []
-          j=math.ceil(plane[0]/numgroups)*(plane[1]-1)
-          i=0
-          ct=0
-          temp=[]
-          while i<num:
-              k=j
-              while k>0 and i<num:
-                  if len(seating)<j:
-                      index=len(seating)-1
-                      coord = seating[index]
-                      temp.append(Passenger(coord[0], coord[1], 'X', views[i], i))
-                  elif (numgroups-ct)%2==0:
-                      index=0
-                      coord = seating[index]
-                      temp.append(Passenger(coord[0], coord[1], 'X', views[i], i))
-                  else:
-                      index=len(seating)-k
-                      coord = seating[index]
-                      temp.append(Passenger(coord[0], coord[1], 'X', views[i], i))
-                  seating.remove(coord)
-                  k=k-1
-                  i=i+1
-              random.shuffle(temp)
-              for why in range(0,len(temp)):
-                  passengers.append(temp[why])
-              ct=ct+1
-              temp.clear()
+  passengers = []
+  j=math.ceil(plane[0]/numgroups)*(plane[1]-1)
+  i=0
+  ct=0
+  temp=[]
+  while i<num:
+    k=j
+    while k>0 and i<num:
+      if len(seating)<j:
+        index=len(seating)-1
+        coord = seating[index]
+        if views == []:
+          temp.append(Passenger(coord[0], coord[1], 'X',i))
+        else:
+          temp.append(gPassenger(coord[0], coord[1], 'X', views[i], i))
+      elif (numgroups-ct)%2==0:
+        index=0
+        coord = seating[index]
+        if views == []:
+          temp.append(Passenger(coord[0], coord[1], 'X',i))
+        else:
+          temp.append(gPassenger(coord[0], coord[1], 'X', views[i], i))
+      else:
+        index=len(seating)-k
+        coord = seating[index]
+        if views == []:
+          temp.append(Passenger(coord[0], coord[1], 'X',i))
+        else:
+          temp.append(gPassenger(coord[0], coord[1], 'X', views[i], i))
+      seating.remove(coord)
+      k=k-1
+      i=i+1
+    random.shuffle(temp)
+    for why in range(0,len(temp)):
+      passengers.append(temp[why])
+    ct=ct+1
+    temp.clear()
 
-          return passengers
+  return passengers
         
 def backToFront(num,plane,views,numgroups):
-          passengers = []
-          big=[]
-          k=0
-          size=math.ceil(plane[0]/numgroups)*(plane[1]-1)
-          for i in range(0, plane[0]):
-              w=0
-              for j in range(0, plane[1]):
-                  if((i == 0 or i == plane[0] - 1) and (j == 0 or j == 1 or j == plane[1] - 1)):
-                      pass
-                  elif j != middle:
-                      if j>middle:
-                         big.insert(0,Passenger(i, j,'X',views[k],k))
-                      else:
-                         big.insert(w,Passenger(i,j,'X',views[k],k))
-                         w=w+1
-                      k=k+1
-          thi=size
-          temp=[]
-          for check in range(0,num):
-              if check<num:
-                  temp.append(big[check])
-                  thi=thi-1
-              if thi==0 or check==num-1:
-                  random.shuffle(temp)
-                  for y in range(0,len(temp)):
-                      passengers.append(temp[y])
+  passengers = []
+  big=[]
+  k=0
+  size=math.ceil(plane[0]/numgroups)*(plane[1]-1)
+  for i in range(0, plane[0]):
+    w=0
+    for j in range(0, plane[1]):
+      if((i == 0 or i == plane[0] - 1) and (j == 0 or j == 1 or j == plane[1] - 1)):
+        pass
+      elif j != middle:
+        if j>middle:
+          if views == []:
+            big.insert(0,Passenger(i, j,'X',k))
+          else:
+            big.insert(0,gPassenger(i, j,'X',views[k],k))
+        else:
+          if views == []:
+            big.insert(w,Passenger(i,j,'X',k))
+          else:
+            big.insert(w,gPassenger(i,j,'X',views[k],k))
+          w=w+1
+        k=k+1
+  thi=size
+  temp=[]
+  for check in range(0,num):
+    if check<num:
+      temp.append(big[check])
+      thi=thi-1
+    if thi==0 or check==num-1:
+      random.shuffle(temp)
+      for y in range(0,len(temp)):
+        passengers.append(temp[y])
 #                      print(rows)
 #                      print(temp[y].rowNum)
-                  temp.clear()
-                  thi=size
+      temp.clear()
+      thi=size
 
-          return passengers
+  return passengers
 
-def runProgram(processes):
 
-  print("Initializing values...")
-
-  processes = processes
-  v = View()
-  v.addSprite(capacity)
-  planeDimensions = [rows, cols]
-  passengers = randomBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
-  #passengers = steffensOptimalBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
-  #passengers = outsideInBoarding(capacity, planeDimensions, v.spriteGroup.sprites())
-  v.moveMultiple(processes)
-  processes = []
-
-  seating = initSeating(rows, cols)
-
-  for p in passengers:
-    p.timestore = 3
-  ct = 0
-  numpass = len(passengers)
-
+def graphicsRun(v, passengers, seating):
   v.timer = 0
+  processes = []
 
   print("\nClick to Start")
 
@@ -552,11 +620,6 @@ def runProgram(processes):
     finished = allSeated(passengers)
     v.moveMultiple(processes)
 
-    # if ct != numpass:
-    #  for line in seating:
-    #    print(line)
-    #  print("-------------")
-
     processes = []
 
   running = True
@@ -565,6 +628,197 @@ def runProgram(processes):
       if event.type == pygame.MOUSEBUTTONDOWN:
         pygame.quit()
         running = False
+
+
+def setRuns():
+  numRuns = 0
+  while numRuns < 1:
+    try:
+      print("\nSelect Number of Runs\n")
+      numRuns = int(input())
+    except ValueError:
+      print("! Invalid Input !")
+  return numRuns
+
+
+def setPassengers(planeDimensions, v, strategy, groups):
+  passengers = []
+  strat = 0
+
+  if strategy != 0:
+    strat = strategy
+
+  while strat > 8 or strat < 1:
+    try:
+      print("Choose boarding method:\n1:Random\n2:Back to Front\n3:Outside In\n4:Reverse Pyramid*\n5:Efficient*\n6:Optimal\n7:Zone Rotate\n8:Steffen's Optimal\n")
+      strat = int(input())
+    except ValueError:
+      pass
+    if strat > 8 or strat < 1:
+      print("\n! Invalid Input !\n")
+
+  if strat == 1:
+    if strategy == 0:
+      print("--Random--")
+    passengers = randomBoarding(capacity, planeDimensions, v)
+
+  elif strat == 2:
+    if strategy == 0:
+      print("--Back to Front--")
+
+      groups = 0
+      while groups <1 or groups > rows:
+        try:
+          print("\n select number of groups:")
+          groups = int(input())
+        except ValueError:
+          pass
+        if groups < 1 or groups > rows:
+          print("\n! Invalid Input!\n")
+
+    passengers = backToFront(capacity, planeDimensions, v, groups)
+
+  elif strat == 3:
+    if strategy == 0:
+      print("--Outside In--")
+    passengers = outsideInBoarding(capacity, planeDimensions, v)
+
+  elif strat == 4:
+    if strategy == 0:
+      print("--Reverse Pyramid--")
+    # TODO add implementation
+
+  elif strat == 5:
+    if strategy == 0:
+      print("--Efficient--")
+    # TODO add implementation
+
+  elif strat == 6:
+    if strategy == 0:
+      print("--Optimal--")
+    passengers = optimalStrategy(capacity, planeDimensions, v)
+
+  elif strat == 7:
+    if strategy == 0:
+      print("--Zone Rotate--")
+    
+      groups = 0
+      while groups <1 or groups > rows:
+        try:
+          print("\n select number of groups:")
+          groups = int(input())
+        except ValueError:
+          pass
+        if groups < 1 or groups > rows:
+          print("\n! Invalid Input!\n")
+
+    passengers = zoneRotate(capacity, planeDimensions, v, groups)
+
+  elif strat == 8:
+    if strategy == 0:
+      print("--Steffen's Optimal--")
+    passengers = steffensOptimalBoarding(capacity, planeDimensions, v)
+
+  return (passengers,strat,groups)
+
+
+def quickRun(passengers, seating, numRuns):
+  time = 0
+
+  finished = False
+  while finished == False:
+    for p in passengers:
+      p.update(seating)
+    time += 1
+    finished = allSeated(passengers)
+
+  minutes = math.floor(time/60)
+  seconds = time - (minutes*60)
+  if seconds <10:
+    print("Time: "+str(minutes)+":0"+str(seconds))
+  else:
+    print("Time: "+str(minutes)+":"+str(seconds))
+
+  return time
+
+def stDev(arr):
+  N = len(arr)
+
+  total = 0
+  for e in arr:
+    total += e
+
+  xBar = math.floor(total/N)
+
+  topSum = 0
+  for e in arr:
+    topSum += (e-xBar)**2
+
+  s = math.floor((topSum/(N-1))**0.5)
+
+  return (s,xBar)
+
+
+def runProgram(processes):
+
+  print("\nInitializing Values...\n")
+
+  planeDimensions = [rows, cols]
+
+  numRuns = setRuns()
+
+  strat = 0
+  groups = 0
+  times = []
+
+  for trial in range(0,numRuns):
+
+    passengers = []
+
+    if numRuns == 1:
+      processes = processes
+      v = View()
+      v.addSprite(capacity)
+      passStrat = setPassengers(planeDimensions, v.spriteGroup.sprites(), strat, groups)
+      passengers = passStrat[0]
+      strat = passStrat[1]
+      groups = passStrat[2]
+      v.moveMultiple(processes)
+    else:
+      passStrat = setPassengers(planeDimensions, [], strat, groups)
+      passengers = passStrat[0]
+      strat = passStrat[1]
+      groups = passStrat[2]
+
+    seating = initSeating(rows, cols)
+
+    ct = 0
+    numpass = len(passengers)
+
+    if numRuns == 1:
+      graphicsRun(v, passengers, seating)
+    else:
+      times.append(quickRun(passengers, seating, numRuns))
+
+  if numRuns != 1:
+    stdMean = stDev(times)
+    tAve = stdMean[1]
+    std = stdMean[0]
+
+    minutes = math.floor(tAve/60)
+    seconds = tAve-(minutes*60)
+    if seconds < 10:
+      print("\nAverage: "+str(minutes)+":0"+str(seconds))
+    else:
+      print("\nAverage: "+str(minutes)+":"+str(seconds))
+
+    sMinutes = math.floor(std/60)
+    sSeconds = std-(sMinutes*60)
+    if sSeconds<10:
+      print("Standard Deviation: "+str(sMinutes)+":0"+str(sSeconds))
+    else:
+      print("Standard Deviation: "+str(sMinutes)+":"+str(sSeconds))
+
 
 
 runProgram(processes)

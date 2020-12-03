@@ -56,6 +56,9 @@ class Passenger(pygame.sprite.Sprite):
 
         self.rect = pygame.Rect(self.x, self.y, tileHeight, tileHeight)
 
+        self.speed = 1
+        self.skip = False
+
     def update(self):
         if self.rect.y < -1 * tileHeight / 2:
             self.index = 0
@@ -80,6 +83,11 @@ class Passenger(pygame.sprite.Sprite):
             self.images = [sitting]
             self.rect.y += (2 / 3) * tileHeight
             self.image = self.images[self.index]
+            while (self.rect.x - wingWidth) % tileHeight != 0:
+                if (self.rect.x - wingWidth) % tileHeight > (tileHeight / 2):
+                    self.rect.x += 1
+                else:
+                    self.rect.x -= 1
             self.isSitting = True
 
     def move(self, char):
@@ -97,6 +105,10 @@ class Passenger(pygame.sprite.Sprite):
             self.stow('r')
         elif char == 'sit':
             self.sit()
+        elif char == 'half':
+            self.speed = 0
+        elif char == 'double':
+            self.speed = 1
 
     def moveDown(self):
         self.images = walk
@@ -104,11 +116,21 @@ class Passenger(pygame.sprite.Sprite):
 
     def moveRight(self):
         self.images = walk
-        self.rect.x += tileHeight / 8
+        if self.speed == 1 or self.skip == False:
+            self.rect.x += tileHeight / 8
+            if self.speed != 1:
+                self.skip = True
+        else:
+            self.skip == False
 
     def moveLeft(self):
         self.images = walk
-        self.rect.x -= tileHeight / 8
+        if self.speed == 1 or self.skip == False:
+            self.rect.x -= tileHeight / 8
+            if self.speed != 1:
+                self.skip = True
+        else:
+            self.skip == False
 
     def moveUp(self):
         self.images = walk
@@ -211,7 +233,7 @@ class View():
         self.screen.blit(self.text, self.textRect)
 
         pygame.display.update()
-        #self.clock.tick(8)
+        # self.clock.tick(8)
 
     def moveMultiple(self, processes):
         for i in range(0, 8):
