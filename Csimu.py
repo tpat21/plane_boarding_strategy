@@ -5,9 +5,12 @@ from threading import *
 import math
 from PyView import *
 
-capacity = 132
-rows = 23
-cols = 7
+capacity = int(input("Plane capacity: "))
+rows = int(input("Plane rows: "))
+cols =  = int(input("Plane columns: "))
+#capacity = 132
+#rows = 23
+#cols = 7
 middle = int(math.ceil(cols / 2)) - 1
 #seating = np.zeros([rows, cols])
 Vmin = 17 * 11 * 7
