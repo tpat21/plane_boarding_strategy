@@ -432,40 +432,39 @@ def optimalStrategy(num, plane, views):
 
     for j in range(0,3):
       # Board all of the even rows on the left side
-      for i in range(plane[0] -2, -1, -2):
-        group1.append([i,j])
-        random.shuffle(group1)
+      for i in range(plane[0] -1, -1, -2):
+
+        if (j == 0 or j == 1) and (i == 0 or i == plane[0] - 1):
+            # Skips places where there are no seats
+            pass
+        else:
+          group1.append([i,j])
+          random.shuffle(group1)
 
     for j in range(0,3):
         # Board all of the even rows on the right side
-        for i in range(plane[0] - 2, -1, -2):
+        for i in range(plane[0] - 1, -1, -2):
+
+          if j == 0 and (i == 0 or i == plane[0] - 1):
+
+            pass
+          else:
             group2.append([i,6-j])
             random.shuffle(group2)
 
 
     for j in range(0,3):
         # Board all of the odd rows on the left side
-        for i in range(plane[0] - 1, -1, -2):
-
-            if (j == 0 or j == 1) and (i == 0 or i == plane[0] - 1):
-                # Skips places where there are no seats
-                pass
-            else:
-                group3.append([i, j])
-                random.shuffle(group3)
-
+        for i in range(plane[0] - 2, -1, -2):
+          group3.append([i, j])
+          random.shuffle(group3)
 
 
     for j in range(0, 3):
         # Board all of the odd rows on the right side
-        for i in range(plane[0] - 1, -1, -2):
-            if j == 0 and (i == 0 or i == plane[0] - 1):
-
-                pass
-            else:
-                group4.append([i,6 - j])
-                random.shuffle(group4)
-
+        for i in range(plane[0] - 2, -1, -2):
+          group4.append([i,6 - j])
+          random.shuffle(group4)
 
     for i in range(len(group1)):
         x = (group1[i][0])
@@ -597,6 +596,211 @@ def backToFront(num,plane,views,numgroups):
 
   return passengers
 
+def reversePyramid(num, plane, views):
+  passengers=[]
+  coord =[]
+  group1 = []
+  group2 = []
+  group3 = []
+  group4 = []
+  group5 = []
+
+  for i in range(0,9):
+    for j in range (2,5):
+    #first group; about 70 percent of aisle seats are boarded
+      if (j == 4 or j == 2):
+        group5.append([i,j])
+  random.shuffle(group5)
+
+  for i in range(9,23):
+  #second group; rest of aisle seats and a little bit of middle column
+    for j in range(2,5):
+      if (j == 2 or j == 4):
+        group4.append([i,j])
+    
+  for i in range(0,6):
+    for j in range(1,6):
+      if (j==1 and i != 0):
+        group4.append([i,j])
+      if(j==5):
+        group4.append([i,j])
+  random.shuffle(group4)
+
+  for i in range(6,20):
+    for j in range(1,6):
+      if (j==1 or j==5):
+        group3.append([i,j])
+                
+  for i in range(1,14):
+    for j in range(0,7):
+      if(j==0 or j==6):
+        group3.append([i,j])
+  random.shuffle(group3)
+
+  for i in range(20,23):
+    for j in range(1,6):
+      if (i!=22 and j==1):
+        group2.append([i,j])
+      if(j==5):
+        group2.append([i,j])
+                    
+  for i in range(14,19):
+    for j in range(0,7):
+      if(j==0 or j==6):
+        group2.append([i,j])
+  random.shuffle(group2)
+
+  for i in range (19,22):
+    for j in range(0,7):
+      if(j==0 or j==6):
+        group1.append([i,j])
+    random.shuffle(group1)
+
+  for i in range(len(group1)):
+    x = (group1[i][0])
+    y = (group1[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+  for i in range(len(group2)):
+    x = (group2[i][0])
+    y = (group2[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+  for i in range(len(group3)):
+    x = (group3[i][0])
+    y = (group3[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+  for i in range(len(group4)):
+    x = (group4[i][0])
+    y = (group4[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+        
+  for i in range(len(group5)):
+    x = (group5[i][0])
+    y = (group5[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+            
+  return passengers
+
+def efficient(num, plane, views):
+  passengers=[]
+  coord =[]
+  group1 = []
+  group2 = []
+  group3 = []
+  group4 = []
+  group5 = []
+
+  for i in range(3,17):
+    for j in range (2,5):
+    #first group; about 70 percent of aisle seats are boarded
+      if (j == 4 or j == 2):
+        group5.append([i,j])
+  random.shuffle(group5)
+
+  for i in range(17,23):
+  #second group; rest of aisle seats and a little bit of middle column
+    for j in range(2,5):
+      if (j == 2 or j == 4):
+        group4.append([i,j])
+    
+  for i in range(3,6):
+    for j in range(1,6):
+      if (j==1 or j==5):
+        group4.append([i,j])
+  random.shuffle(group4)
+  
+  for i in range(6,20):
+    for j in range(1,6):
+      if (j==1 or j==5):
+        group3.append([i,j])
+                
+  for i in range(3,6):
+    for j in range(0,7):
+      if(j==0 or j==6):
+        group3.append([i,j])
+  random.shuffle(group3)
+  
+  for i in range(20,23):
+    for j in range(1,6):
+      if (i!=22 and j==1):
+        group2.append([i,j])
+      if(j==5):
+        group2.append([i,j])
+                    
+  for i in range(6,22):
+    for j in range(0,7):
+      if(j==0 or j==6):
+        group2.append([i,j])
+  random.shuffle(group2)
+  
+  for i in range (1,3):
+    for j in range(0,7):
+      if(j!=3):
+        group1.append([i,j])
+  for j in range(2,6):
+    if(j!=3):
+      group1.append([0,j])
+  random.shuffle(group1)
+  
+  for i in range(len(group1)):
+    x = (group1[i][0])
+    y = (group1[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+  for i in range(len(group2)):
+    x = (group2[i][0])
+    y = (group2[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+  for i in range(len(group3)):
+    x = (group3[i][0])
+    y = (group3[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+
+  for i in range(len(group4)):
+    x = (group4[i][0])
+    y = (group4[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+        
+  for i in range(len(group5)):
+    x = (group5[i][0])
+    y = (group5[i][1])
+    if views == []:
+      passengers.append(Passenger(x, y , 'X', len(passengers)))
+    else:
+      passengers.append(gPassenger(x, y , 'X', views[len(passengers)], len(passengers)))
+            
+  return passengers
+
 
 def graphicsRun(v, passengers, seating):
   v.timer = 0
@@ -654,7 +858,7 @@ def setPassengers(planeDimensions, v, strategy, groups):
 
   while strat > 8 or strat < 1:
     try:
-      print("Choose boarding method:\n1:Random\n2:Back to Front\n3:Outside In\n4:Reverse Pyramid*\n5:Efficient*\n6:Optimal\n7:Zone Rotate\n8:Steffen's Optimal\n")
+      print("Choose boarding method:\n1:Random\n2:Back to Front\n3:Outside In\n4:Reverse Pyramid\n5:Efficient\n6:Optimal\n7:Zone Rotate\n8:Steffen's Optimal\n")
       strat = int(input())
     except ValueError:
       pass
@@ -690,12 +894,12 @@ def setPassengers(planeDimensions, v, strategy, groups):
   elif strat == 4:
     if strategy == 0:
       print("--Reverse Pyramid--")
-    # TODO add implementation
+    passengers = reversePyramid(capacity, planeDimensions, v)
 
   elif strat == 5:
     if strategy == 0:
       print("--Efficient--")
-    # TODO add implementation
+    passengers = efficient(capacity, planeDimensions, v)
 
   elif strat == 6:
     if strategy == 0:
